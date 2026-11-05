@@ -45,7 +45,13 @@ def corpo_da_pagina(html):
     fim = html.rfind('</body></html>')
     if inicio < 0 or fim < 0 or fim < inicio:
         raise SystemExit('Não encontrei o esqueleto <body>…</body></html> na página.')
-    return html[inicio + len('<body>'):fim]
+    corpo = html[inicio + len('<body>'):fim]
+    # a plataforma acrescenta uma quebra de linha logo depois de <body> e outra antes de </body>
+    if corpo.startswith('\n'):
+        corpo = corpo[1:]
+    if corpo.endswith('\n'):
+        corpo = corpo[:-1]
+    return corpo
 
 
 def ler_dados(html):

@@ -128,6 +128,8 @@ button,textarea,input{font:inherit;color:inherit}
 .bolha p{margin:0 0 .55em}
 .bolha p:last-child,.bolha ul:last-child,.bolha ol:last-child{margin-bottom:0}
 .bolha ul,.bolha ol{margin:0 0 .55em;padding-left:1.25em}
+.bolha ul{list-style:disc}
+.bolha ol{list-style:decimal}
 .bolha code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;padding:0 .25em;border-radius:4px;background:var(--sutil)}
 .nota{font-size:12px;color:var(--texto-suave)}
 .miniatura{display:block;width:100%;padding:0;border:1px solid var(--borda);border-radius:10px;overflow:hidden;background:var(--folha);cursor:zoom-in}
@@ -174,6 +176,11 @@ button,textarea,input{font:inherit;color:inherit}
   .bt{width:40px}
   .bt-cor,[data-tamanho]{width:34px}
   #bt-so-caneta{width:auto}
+}
+@media (min-width:340px) and (max-width:620px){
+  .barra > *{order:1}
+  .barra > .grupo:first-child,#bt-mais{order:0}
+  #bt-mais{margin-left:auto}
   .hud .zoom{min-width:46px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -257,6 +264,7 @@ button,textarea,input{font:inherit;color:inherit}
     <button type="button" class="bt" id="bt-fechar-conversa" aria-label="Fechar conversa" title="Fechar conversa"><svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
   </div>
   <ol class="fio" id="fio"></ol>
+  <p class="visualmente-oculto" id="anuncio" aria-live="polite"></p>
   <div class="fio-vazio" id="fio-vazio">
     <strong>Nada enviado ainda</strong>
     <ol>
@@ -314,8 +322,9 @@ button,textarea,input{font:inherit;color:inherit}
   const $ = (id) => document.getElementById(id);
 
   /* Esqueleto que a publicação do Artifact usa; a lousa se republica neste mesmo formato. */
-  const RESET = ':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}';
-  const ESQUELETO_INICIO = '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + RESET + '</style></head><body>';
+  const RESET = ':root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}';
+  const ESQUELETO_INICIO = '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + RESET + '</style></head><body>\n';
+  const ESQUELETO_FIM = '\n</body></html>';
   const CABECA = '<title>Lousa de Ideias</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Instrument+Sans:wght@400;500;600&display=swap">\n';
 
   /* ============ Constantes ============ */
@@ -764,6 +773,7 @@ button,textarea,input{font:inherit;color:inherit}
     idb.gravar(ref, it.src).then((ok) => { if (ok) { it.ref = ref; salvarRascunhoDepois(); } });
   }
   function carregarImagensGuardadas() {
+    itens.forEach((i) => { if (i.k === 'i' && !i.ref && i.src && i.src.indexOf('data:') === 0) guardarImagemLocal(i); });
     const pendentes = itens.filter((i) => i.k === 'i' && !i.src && i.ref);
     const limpar = () => idb.chaves().then((ks) => {
       if (!Array.isArray(ks)) return;
@@ -771,18 +781,23 @@ button,textarea,input{font:inherit;color:inherit}
       ks.forEach((k) => { if (!usados.has(k)) idb.apagar(k); });
     });
     if (!pendentes.length) { limpar(); return; }
+    /* ler() devolve true quando a chave não existe e null quando a leitura falha: só a chave ausente é perda. */
+    let falhou = false;
     Promise.all(pendentes.map((it) => idb.ler(it.ref).then((v) => {
       if (typeof v === 'string' && /^data:image\/(png|jpeg|webp|gif);base64,/.test(v)) it.src = v;
+      else if (v === true) it.perdida = true;
+      else falhou = true;
     }))).then(() => {
       const antes = itens.length;
-      itens = itens.filter((i) => !(i.k === 'i' && !i.src));
+      itens = itens.filter((i) => !(i.k === 'i' && i.perdida));
       agendarBase(); aposMudanca();
       if (itens.length < antes) avisar('Algumas imagens do rascunho não puderam ser recuperadas.');
-      limpar();
+      else if (falhou) avisar('Não consegui abrir as imagens guardadas agora. Elas continuam salvas; recarregue a lousa para tentar de novo.');
+      if (!falhou) limpar();
     });
   }
 
-  let timerSalvar = null, avisouCota = false;
+  let timerSalvar = null, avisouCota = null;
   function salvarRascunhoDepois() { clearTimeout(timerSalvar); timerSalvar = setTimeout(salvarRascunho, 400); }
   function itensParaRascunho(semEmbutidas) {
     const lista = [];
@@ -801,9 +816,9 @@ button,textarea,input{font:inherit;color:inherit}
     let ok = armazem.gravar(CH.rascunho, { v: 1, itens: itensParaRascunho(false), vista });
     if (!ok && armazem.gravar(CH.rascunho, { v: 1, itens: itensParaRascunho(true), vista })) ok = 'parcial';
     if (!ok) armazem.remover(CH.rascunho);
-    if (ok === true) { avisouCota = false; return; }
-    if (itens.length && !avisouCota) {
-      avisouCota = true;
+    if (ok === true) { avisouCota = null; return; }
+    if (itens.length && avisouCota !== ok) {
+      avisouCota = ok;
       avisar(ok
         ? 'Algumas imagens inseridas não cabem no rascunho deste aparelho. Se a lousa recarregar (por exemplo, quando o Claude responder), elas somem.'
         : 'Não deu para guardar o rascunho neste aparelho. Se a lousa recarregar (por exemplo, quando o Claude responder), o desenho atual some.');
@@ -1201,8 +1216,10 @@ button,textarea,input{font:inherit;color:inherit}
   function ajustarEditor() {
     editor.style.height = 'auto';
     editor.style.width = 'auto';
-    editor.style.height = editor.scrollHeight + 'px';
+    const borda = editor.offsetHeight - editor.clientHeight;
+    editor.style.height = (editor.scrollHeight + borda) + 'px';
     editor.style.width = Math.max(editor.scrollWidth + 8, 40) + 'px';
+    editor.scrollTop = 0; editor.scrollLeft = 0;
     manterEditorVisivel();
   }
   /* Se o texto passar da borda (ou o teclado encolher a folha), move a folha em vez de deixar o navegador rolar. */
@@ -1212,10 +1229,11 @@ button,textarea,input{font:inherit;color:inherit}
     const ex = edicao.x * vista.z + vista.x - 4.5, ey = edicao.y * vista.z + vista.y - 1.5;
     const ew = editor.offsetWidth, eh = editor.offsetHeight;
     let dx = 0, dy = 0;
-    if (ex + ew > W - m) dx = (W - m) - (ex + ew);
-    if (ex + dx < m) dx = m - ex;
-    if (ey + eh > H - m) dy = (H - m) - (ey + eh);
-    if (ey + dy < m) dy = m - ey;
+    /* quando não cabe, vale a borda direita/de baixo, onde se digita */
+    if (ex < m) dx = m - ex;
+    if (ex + dx + ew > W - m) dx = (W - m) - (ex + ew);
+    if (ey < m) dy = m - ey;
+    if (ey + dy + eh > H - m) dy = (H - m) - (ey + eh);
     if (!dx && !dy) return;
     vista = { x: vista.x + dx, y: vista.y + dy, z: vista.z };
     editor.style.transform = 'translate(' + (ex + dx) + 'px,' + (ey + dy) + 'px)';
@@ -1335,6 +1353,7 @@ button,textarea,input{font:inherit;color:inherit}
     popAberto = null;
   }
   document.addEventListener('pointerdown', (e) => {
+    if (e.target === viva && e.pointerType === 'touch' && ((gesto && gesto.tipoPonteiro === 'pen') || performance.now() < canetaPertoAte)) return;
     if (popAberto && !popAberto.pop.contains(e.target) && !popAberto.botao.contains(e.target)) fecharPopovers();
   }, true);
 
@@ -1448,7 +1467,7 @@ button,textarea,input{font:inherit;color:inherit}
       '<script type="text/html" id="molde">' + $('molde').textContent + '<\/script>\n' +
       '<div id="app"></div>\n' +
       '<script id="codigo">' + $('codigo').textContent + '<\/script>\n' +
-      '</body></html>';
+      ESQUELETO_FIM;
   }
 
   /* ============ Enviar para o Claude ============ */
@@ -1517,9 +1536,7 @@ button,textarea,input{font:inherit;color:inherit}
       salvarTudo();
       definirStatus('Salvando na lousa…');
       await publicar(art, html);
-      /* A plataforma recarrega a lousa em seguida; até lá, não deixa enviar de novo. */
-      publicado = true;
-      setTimeout(() => { publicado = false; if (!somenteLeitura && !enviando) $('bt-enviar').disabled = false; }, 10000);
+      esperarRecarga();
       estado = novo;
       campo.value = ''; ajustarCampo(); armazem.remover(CH.texto);
       renderConversa();
@@ -1533,9 +1550,16 @@ button,textarea,input{font:inherit;color:inherit}
     }
   }
 
+  /* Depois de publicar (ou de um conflito) a plataforma recarrega a lousa; até lá, não deixa enviar de novo. */
+  function esperarRecarga() {
+    publicado = true;
+    $('bt-enviar').disabled = true;
+    setTimeout(() => { publicado = false; if (!somenteLeitura && !enviando) $('bt-enviar').disabled = false; }, 10000);
+  }
   function tratarErroEnvio(err) {
     const code = err && err.code;
     if (code === 'conflict') {
+      esperarRecarga();
       /* Mantém o registro do envio: ao recarregar, a lousa confere se a mensagem chegou mesmo. */
       definirStatus('A lousa recebeu uma atualização (talvez uma resposta do Claude) e vai recarregar. Se a mensagem não aparecer na conversa, toque em Enviar de novo.');
       return;
@@ -1613,7 +1637,10 @@ button,textarea,input{font:inherit;color:inherit}
     } finally {
       if (leituraCtl === ctl) leituraCtl = null;
       atualizarBotaoLeitura();
-      if (reg) { salvarLeituras(); renderConversa(); }
+      if (reg) {
+        salvarLeituras(); renderConversa();
+        $('anuncio').textContent = reg.fase === 'pronta' || reg.fase === 'cortada' ? 'Leitura rápida pronta na conversa.' : (NOTAS_LEITURA[reg.fase] || '');
+      }
     }
   }
   const NOTAS_LEITURA = {
@@ -1664,7 +1691,9 @@ button,textarea,input{font:inherit;color:inherit}
       let i = 0;
       while (i < linhas.length) {
         if (RE_ITEM.test(linhas[i])) {
-          const lista = criar(/^\s*\d/.test(linhas[i]) ? 'ol' : 'ul');
+          const n0 = /^\s*(\d+)[.)]/.exec(linhas[i]);
+          const lista = criar(n0 ? 'ol' : 'ul');
+          if (n0 && Number(n0[1]) > 1) lista.start = Number(n0[1]);
           while (i < linhas.length && RE_ITEM.test(linhas[i])) {
             const li = criar('li'); textoEmLinha(li, linhas[i].replace(RE_ITEM, '')); lista.append(li); i++;
           }
@@ -1798,6 +1827,7 @@ button,textarea,input{font:inherit;color:inherit}
   /* --- caixa de luz --- */
   let srcCaixa = null;
   function abrirCaixaLuz(src) {
+    esconderAviso();
     srcCaixa = src;
     $('caixa-luz-img').src = src;
     $('caixa-luz').hidden = false;
