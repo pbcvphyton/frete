@@ -70,14 +70,14 @@ button,textarea,input{font:inherit;color:inherit}
 .ponto{display:block;border-radius:50%;background:currentColor;width:var(--d);height:var(--d)}
 .bt-rotulo{width:auto;display:inline-flex;align-items:center;gap:8px;padding:0 10px 0 12px;font-size:13px;font-weight:600;white-space:nowrap}
 .bt-rotulo[aria-pressed="true"]{background:transparent;color:var(--texto)}
-.chave{position:relative;width:30px;height:18px;border-radius:999px;background:var(--borda);transition:background .15s}
+.chave{position:relative;flex:none;width:30px;height:18px;border-radius:999px;background:var(--borda);transition:background .15s}
 .chave::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--painel);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
 [aria-pressed="true"] > .chave{background:var(--realce)}
 [aria-pressed="true"] > .chave::after{transform:translateX(12px)}
 .selo{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--realce);box-shadow:0 0 0 2px var(--painel)}
 
 /* Folha de desenho */
-.palco{grid-area:palco;position:relative;min-height:0;min-width:0;border-radius:var(--raio);overflow:hidden;background:var(--folha);border:1px solid var(--borda);box-shadow:var(--sombra);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.palco{grid-area:palco;position:relative;min-height:0;min-width:0;border-radius:var(--raio);overflow:hidden;overflow:clip;background:var(--folha);border:1px solid var(--borda);box-shadow:var(--sombra);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .palco canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
 #camada-viva{touch-action:none;cursor:crosshair}
 #camada-viva.mao{cursor:grab}
@@ -155,10 +155,10 @@ button,textarea,input{font:inherit;color:inherit}
 .segmentado .item-menu{justify-content:center;padding:0 8px}
 .separador{height:1px;margin:4px 6px;background:var(--borda)}
 .caixa-luz{position:fixed;inset:0;z-index:50;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:12px;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(6,10,8,.88)}
-.caixa-luz-img{min-height:0;display:grid;place-items:center}
+.caixa-luz-img{min-height:0;display:grid;place-items:center;grid-template:minmax(0,1fr)/minmax(0,1fr)}
 .caixa-luz-img img{max-width:100%;max-height:100%;border-radius:10px;background:var(--folha)}
 .caixa-luz .acoes{display:flex;justify-content:center;flex-wrap:wrap;gap:10px}
-.caixa-luz .bt-sec{color:#F3F6F4;border-color:rgba(243,246,244,.35)}
+.caixa-luz .bt-sec{color:#F3F6F4;border-color:rgba(243,246,244,.35);background:rgba(6,10,8,.6)}
 .aviso{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 32px);padding:8px 8px 8px 16px;border-radius:12px;background:var(--ativo-fundo);color:var(--ativo-texto);box-shadow:var(--sombra);font-size:14px}
 .aviso-acao{flex:none;height:36px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--aviso-acao);font-size:14px;font-weight:600;cursor:pointer}
 
@@ -173,6 +173,7 @@ button,textarea,input{font:inherit;color:inherit}
   .divisor{display:none}
   .bt{width:40px}
   .bt-cor,[data-tamanho]{width:34px}
+  #bt-so-caneta{width:auto}
   .hud .zoom{min-width:46px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -229,7 +230,7 @@ button,textarea,input{font:inherit;color:inherit}
   <canvas id="camada-base" aria-hidden="true"></canvas>
   <canvas id="camada-viva" role="img" aria-label="Folha de desenho. Desenhe com a caneta; o dedo arrasta e dá zoom quando Só caneta está ligado."></canvas>
   <div class="cursor" id="cursor" hidden></div>
-  <textarea class="editor-texto" id="editor-texto" rows="1" hidden aria-label="Texto na lousa" spellcheck="false"></textarea>
+  <textarea class="editor-texto" id="editor-texto" rows="1" cols="1" hidden aria-label="Texto na lousa" spellcheck="false"></textarea>
   <p class="dica" id="dica"><strong>Desenhe aqui</strong><span>Use a S Pen. O dedo arrasta e dá zoom com “Só caneta” ligado. Toque com dois dedos para desfazer.</span></p>
   <div class="hud" role="group" aria-label="Zoom">
     <button type="button" class="bt" id="bt-zoom-menos" aria-label="Diminuir zoom" title="Diminuir zoom"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
@@ -255,7 +256,7 @@ button,textarea,input{font:inherit;color:inherit}
     <h2>Conversa</h2>
     <button type="button" class="bt" id="bt-fechar-conversa" aria-label="Fechar conversa" title="Fechar conversa"><svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button>
   </div>
-  <ol class="fio" id="fio" aria-live="polite"></ol>
+  <ol class="fio" id="fio"></ol>
   <div class="fio-vazio" id="fio-vazio">
     <strong>Nada enviado ainda</strong>
     <ol>
@@ -402,12 +403,16 @@ button,textarea,input{font:inherit;color:inherit}
     if (it.k === 's') return Array.isArray(it.p) && it.p.length >= 3 && it.p.length % 3 === 0 && num(it.w) && CORES.includes(it.c);
     if (it.k === 'l' || it.k === 'a' || it.k === 'r' || it.k === 'e') return num(it.x1) && num(it.y1) && num(it.x2) && num(it.y2) && num(it.w) && CORES.includes(it.c);
     if (it.k === 't') return typeof it.t === 'string' && num(it.x) && num(it.y) && num(it.s) && CORES.includes(it.c);
-    if (it.k === 'i') return typeof it.src === 'string' && /^(data:image\/(png|jpeg|webp|gif);base64,|\/_blob\/[A-Za-z0-9_-]+$)/.test(it.src) && num(it.x) && num(it.y) && num(it.w) && num(it.h);
+    if (it.k === 'i') {
+      const fonte = typeof it.src === 'string' ? /^(data:image\/(png|jpeg|webp|gif);base64,|\/_blob\/[A-Za-z0-9_-]+$)/.test(it.src) : (typeof it.ref === 'string' && /^img[a-z0-9]{4,40}$/.test(it.ref));
+      return fonte && num(it.x) && num(it.y) && num(it.w) && num(it.h);
+    }
     return false;
   }
 
   /* ============ Caixas (limites) ============ */
-  const caixas = new WeakMap();
+  let caixas = new WeakMap();
+  const metricas = new Map();
   const medidor = document.createElement('canvas').getContext('2d');
   function fonteTexto(s) { return '600 ' + s + 'px ' + FONTE_MAO; }
   function caixa(it) {
@@ -555,18 +560,33 @@ button,textarea,input{font:inherit;color:inherit}
     ctx.restore();
   }
 
+  /* Linha de base igual à do editor (caixa de linha CSS de 1,15em), para o texto não pular ao confirmar. */
+  function baseTexto(s) {
+    const f = fonteTexto(s);
+    let b = metricas.get(f);
+    if (b == null) {
+      medidor.font = f;
+      const m = medidor.measureText('Hg');
+      const A = num(m.fontBoundingBoxAscent) ? m.fontBoundingBoxAscent : s * 0.96;
+      const D = num(m.fontBoundingBoxDescent) ? m.fontBoundingBoxDescent : s * 0.3;
+      b = (s * 1.15 - (A + D)) / 2 + A;
+      metricas.set(f, b);
+    }
+    return b;
+  }
   function desenharTexto(ctx, it) {
     ctx.save();
     ctx.fillStyle = corDe(it.c);
     ctx.font = fonteTexto(it.s);
-    ctx.textBaseline = 'top';
-    it.t.split('\n').forEach((l, i) => ctx.fillText(l, it.x, it.y + i * it.s * 1.15));
+    ctx.textBaseline = 'alphabetic';
+    const b = baseTexto(it.s);
+    it.t.split('\n').forEach((l, i) => ctx.fillText(l, it.x, it.y + i * it.s * 1.15 + b));
     ctx.restore();
   }
 
   function desenharImagem(ctx, it, escala) {
-    const im = imagemDe(it.src);
-    if (im.complete && im.naturalWidth) {
+    const im = it.src ? imagemDe(it.src) : null;
+    if (im && im.complete && im.naturalWidth) {
       ctx.drawImage(im, it.x, it.y, it.w, it.h);
     } else {
       ctx.save();
@@ -705,14 +725,88 @@ button,textarea,input{font:inherit;color:inherit}
     return true;
   }
 
+  /* Imagens inseridas ficam no IndexedDB (cabe muito mais); o rascunho guarda só a referência. */
+  const idb = {
+    p: null,
+    abrir() {
+      if (!this.p) this.p = new Promise((res) => {
+        try {
+          const r = indexedDB.open('lousa-ideias', 1);
+          r.onupgradeneeded = () => { try { r.result.createObjectStore('imagens'); } catch (e) { /* já existe */ } };
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => res(null);
+          r.onblocked = () => res(null);
+        } catch (e) { res(null); }
+      });
+      return this.p;
+    },
+    async op(modo, fn) {
+      const db = await this.abrir();
+      if (!db) return null;
+      return new Promise((res) => {
+        try {
+          const tx = db.transaction('imagens', modo);
+          const req = fn(tx.objectStore('imagens'));
+          tx.oncomplete = () => res(req.result === undefined ? true : req.result);
+          tx.onerror = () => res(null);
+          tx.onabort = () => res(null);
+        } catch (e) { res(null); }
+      });
+    },
+    gravar(k, v) { return this.op('readwrite', (st) => st.put(v, k)); },
+    ler(k) { return this.op('readonly', (st) => st.get(k)); },
+    chaves() { return this.op('readonly', (st) => st.getAllKeys()); },
+    apagar(k) { return this.op('readwrite', (st) => st.delete(k)); }
+  };
+  function guardarImagemLocal(it) {
+    if (!it.src || it.src.indexOf('data:') !== 0) return;
+    const ref = novoId('img');
+    idb.gravar(ref, it.src).then((ok) => { if (ok) { it.ref = ref; salvarRascunhoDepois(); } });
+  }
+  function carregarImagensGuardadas() {
+    const pendentes = itens.filter((i) => i.k === 'i' && !i.src && i.ref);
+    const limpar = () => idb.chaves().then((ks) => {
+      if (!Array.isArray(ks)) return;
+      const usados = new Set(itens.map((i) => i.ref).filter(Boolean));
+      ks.forEach((k) => { if (!usados.has(k)) idb.apagar(k); });
+    });
+    if (!pendentes.length) { limpar(); return; }
+    Promise.all(pendentes.map((it) => idb.ler(it.ref).then((v) => {
+      if (typeof v === 'string' && /^data:image\/(png|jpeg|webp|gif);base64,/.test(v)) it.src = v;
+    }))).then(() => {
+      const antes = itens.length;
+      itens = itens.filter((i) => !(i.k === 'i' && !i.src));
+      agendarBase(); aposMudanca();
+      if (itens.length < antes) avisar('Algumas imagens do rascunho não puderam ser recuperadas.');
+      limpar();
+    });
+  }
+
   let timerSalvar = null, avisouCota = false;
   function salvarRascunhoDepois() { clearTimeout(timerSalvar); timerSalvar = setTimeout(salvarRascunho, 400); }
+  function itensParaRascunho(semEmbutidas) {
+    const lista = [];
+    for (const it of itens) {
+      if (it.k === 'i' && (!it.src || it.src.indexOf('data:') === 0)) {
+        if (it.ref) lista.push({ k: 'i', ref: it.ref, x: it.x, y: it.y, w: it.w, h: it.h });
+        else if (it.src && !semEmbutidas) lista.push(it);
+      } else lista.push(it);
+    }
+    /* texto ainda no editor também entra, para não se perder se a lousa recarregar */
+    if (edicao && editor.value.trim()) lista.push({ k: 't', c: edicao.c, s: edicao.s, x: edicao.x, y: edicao.y, t: editor.value.replace(/\s+$/, '') });
+    return lista;
+  }
   function salvarRascunho() {
     clearTimeout(timerSalvar); timerSalvar = null;
-    const ok = armazem.gravar(CH.rascunho, { v: 1, itens, vista });
-    if (!ok && itens.length && !avisouCota) {
+    let ok = armazem.gravar(CH.rascunho, { v: 1, itens: itensParaRascunho(false), vista });
+    if (!ok && armazem.gravar(CH.rascunho, { v: 1, itens: itensParaRascunho(true), vista })) ok = 'parcial';
+    if (!ok) armazem.remover(CH.rascunho);
+    if (ok === true) { avisouCota = false; return; }
+    if (itens.length && !avisouCota) {
       avisouCota = true;
-      avisar('Não deu para guardar o rascunho neste aparelho. O desenho continua aqui enquanto a página estiver aberta.');
+      avisar(ok
+        ? 'Algumas imagens inseridas não cabem no rascunho deste aparelho. Se a lousa recarregar (por exemplo, quando o Claude responder), elas somem.'
+        : 'Não deu para guardar o rascunho neste aparelho. Se a lousa recarregar (por exemplo, quando o Claude responder), o desenho atual some.');
     }
   }
   function aposMudanca() {
@@ -739,7 +833,7 @@ button,textarea,input{font:inherit;color:inherit}
   function posicao(e) { return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
   function toquesAtivos() {
     const r = [];
-    ponteiros.forEach((p, id) => { if (p.tipo === 'touch') r.push({ id, x: p.x, y: p.y }); });
+    ponteiros.forEach((p, id) => { if (p.tipo === 'touch' && !p.ignorado) r.push({ id, x: p.x, y: p.y }); });
     return r;
   }
   function capturar(e) { try { viva.setPointerCapture(e.pointerId); } catch (err) { /* ok */ } }
@@ -752,18 +846,21 @@ button,textarea,input{font:inherit;color:inherit}
   function aoBaixar(e) {
     e.preventDefault();
     atualizarRect();
-    fecharPopovers();
     const tipo = e.pointerType || 'mouse';
-    if (tipo === 'pen') { registrarCaneta(); canetaPertoAte = performance.now() + 600; }
-    const ativo = document.activeElement;
-    if (editorAberto()) { fecharEditorTexto(true); return; }
-    if (ativo && ativo !== document.body && ativo !== viva && typeof ativo.blur === 'function') ativo.blur();
     const pos = posicao(e);
+    /* Palma: toque enquanto a caneta desenha ou paira perto. Fica registrado, mas não faz nada. */
+    if (tipo === 'touch' && ((gesto && gesto.tipoPonteiro === 'pen') || performance.now() < canetaPertoAte)) {
+      ponteiros.set(e.pointerId, { x: pos.x, y: pos.y, tipo, ignorado: true });
+      return;
+    }
+    fecharPopovers();
+    if (tipo === 'pen') { registrarCaneta(); canetaPertoAte = performance.now() + 600; }
+    if (editorAberto()) { fecharEditorTexto(true); return; }
+    const ativo = document.activeElement;
+    if (ativo && ativo !== document.body && ativo !== viva && typeof ativo.blur === 'function') ativo.blur();
     ponteiros.set(e.pointerId, { x: pos.x, y: pos.y, tipo });
 
     if (tipo === 'touch') {
-      if (gesto && gesto.tipoPonteiro === 'pen') return;
-      if (performance.now() < canetaPertoAte) return;
       const toques = toquesAtivos();
       if (toques.length >= 2) {
         if (gesto && (gesto.tipo === 'desenho' || gesto.tipo === 'forma') && gesto.tipoPonteiro === 'touch') {
@@ -780,6 +877,7 @@ button,textarea,input{font:inherit;color:inherit}
       }
       if (soCanetaEfetivo() || prefs.ferramenta === 'mao') { capturar(e); iniciarPan(e.pointerId, pos, tipo); return; }
     }
+    if (tipo === 'pen' && gesto && gesto.tipoPonteiro === 'touch') cederParaCaneta();
     if (gesto) return;
     if (tipo === 'mouse' && (e.button === 1 || e.button === 2 || espacoPressionado)) { capturar(e); iniciarPan(e.pointerId, pos, tipo); return; }
     if (tipo === 'mouse' && e.button !== 0) return;
@@ -790,6 +888,20 @@ button,textarea,input{font:inherit;color:inherit}
     else if (ferr === 'borracha') iniciarBorracha(e, pos);
     else if (ferr === 'forma') iniciarForma(e, pos);
     else if (ferr === 'texto') gesto = { tipo: 'toque-texto', id: e.pointerId, tipoPonteiro: tipo, x: pos.x, y: pos.y, inicio: performance.now() };
+  }
+
+  /* A caneta encosta enquanto um toque (palma, polegar) já fazia algo: a caneta ganha. */
+  function cederParaCaneta() {
+    const g = gesto;
+    if ((g.tipo === 'pan' || g.tipo === 'pinca') && Math.hypot(vista.x - g.v0.x, vista.y - g.v0.y) < 40 && Math.abs(vista.z - g.v0.z) < 0.08) { vista = g.v0; aoMudarVista(); }
+    if (g.tipo === 'borracha') desfazerApagamento(g);
+    cancelarGesto();
+    ponteiros.forEach((p) => { if (p.tipo === 'touch') p.ignorado = true; });
+  }
+  function desfazerApagamento(g) {
+    for (let i = g.removidos.length - 1; i >= 0; i--) itens.splice(Math.min(g.removidos[i].idx, itens.length), 0, g.removidos[i].item);
+    g.removidos = [];
+    esconderCursor(); agendarBase(); aposMudanca();
   }
 
   function aoMover(e) {
@@ -819,8 +931,8 @@ button,textarea,input{font:inherit;color:inherit}
     if (!gesto) { if (e.pointerType === 'touch') esconderCursor(); return; }
     const g = gesto;
     switch (g.tipo) {
-      case 'desenho': if (e.pointerId === g.id) finalizarTraco(); break;
-      case 'borracha': if (e.pointerId === g.id) finalizarBorracha(); break;
+      case 'desenho': if (e.pointerId === g.id) { if (cancelado && g.tipoPonteiro === 'touch') cancelarGesto(); else finalizarTraco(); } break;
+      case 'borracha': if (e.pointerId === g.id) { if (cancelado && g.tipoPonteiro === 'touch') { gesto = null; desfazerApagamento(g); } else finalizarBorracha(); } break;
       case 'forma': if (e.pointerId === g.id) { if (cancelado) cancelarGesto(); else finalizarForma(); } break;
       case 'pan': if (e.pointerId === g.id) { gesto = null; viva.classList.remove('arrastando'); } break;
       case 'pinca':
@@ -1083,7 +1195,7 @@ button,textarea,input{font:inherit;color:inherit}
     if (!edicao) return;
     const fs = edicao.s * vista.z;
     editor.style.fontSize = fs + 'px';
-    editor.style.transform = 'translate(' + (edicao.x * vista.z + vista.x - 4) + 'px,' + (edicao.y * vista.z + vista.y - 2) + 'px)';
+    editor.style.transform = 'translate(' + (edicao.x * vista.z + vista.x - 4.5) + 'px,' + (edicao.y * vista.z + vista.y - 1.5) + 'px)';
     ajustarEditor();
   }
   function ajustarEditor() {
@@ -1091,6 +1203,23 @@ button,textarea,input{font:inherit;color:inherit}
     editor.style.width = 'auto';
     editor.style.height = editor.scrollHeight + 'px';
     editor.style.width = Math.max(editor.scrollWidth + 8, 40) + 'px';
+    manterEditorVisivel();
+  }
+  /* Se o texto passar da borda (ou o teclado encolher a folha), move a folha em vez de deixar o navegador rolar. */
+  function manterEditorVisivel() {
+    if (!edicao) return;
+    const m = 12;
+    const ex = edicao.x * vista.z + vista.x - 4.5, ey = edicao.y * vista.z + vista.y - 1.5;
+    const ew = editor.offsetWidth, eh = editor.offsetHeight;
+    let dx = 0, dy = 0;
+    if (ex + ew > W - m) dx = (W - m) - (ex + ew);
+    if (ex + dx < m) dx = m - ex;
+    if (ey + eh > H - m) dy = (H - m) - (ey + eh);
+    if (ey + dy < m) dy = m - ey;
+    if (!dx && !dy) return;
+    vista = { x: vista.x + dx, y: vista.y + dy, z: vista.z };
+    editor.style.transform = 'translate(' + (ex + dx) + 'px,' + (ey + dy) + 'px)';
+    agendarBase(); agendarVivo(); salvarRascunhoDepois();
   }
   function fecharEditorTexto(salvar) {
     if (!edicao) return;
@@ -1144,7 +1273,14 @@ button,textarea,input{font:inherit;color:inherit}
   }));
   document.querySelectorAll('[data-tamanho]').forEach((b) => b.addEventListener('click', () => {
     prefs.tamanho = Number(b.dataset.tamanho); salvarPrefs(); atualizarBarra();
+    if (edicao) { edicao.s = TAM_TEXTO[prefs.tamanho]; posicionarEditor(); }
   }));
+  /* Tocar numa cor ou espessura enquanto digita não tira o foco do texto. */
+  document.querySelectorAll('[data-cor],[data-tamanho]').forEach((b) => {
+    const manterFoco = (e) => { if (edicao) e.preventDefault(); };
+    b.addEventListener('pointerdown', manterFoco);
+    b.addEventListener('mousedown', manterFoco);
+  });
   document.querySelectorAll('[data-fundo]').forEach((b) => b.addEventListener('click', () => {
     prefs.fundo = b.dataset.fundo; salvarPrefs(); atualizarBarra(); agendarBase();
   }));
@@ -1207,7 +1343,9 @@ button,textarea,input{font:inherit;color:inherit}
     const vw = W / vista.z, vh = H / vista.z;
     const s = Math.min((vw * 0.72) / nw, (vh * 0.72) / nh, 2 / vista.z, 4);
     const w = nw * s, h = nh * s, c = paraMundo(W / 2, H / 2);
-    adicionarItem({ k: 'i', src, x: arred(c.x - w / 2), y: arred(c.y - h / 2), w: arred(w), h: arred(h) });
+    const it = { k: 'i', src, x: arred(c.x - w / 2), y: arred(c.y - h / 2), w: arred(w), h: arred(h) };
+    adicionarItem(it);
+    guardarImagemLocal(it);
   }
   async function reduzirImagem(arquivo, max) {
     const url = URL.createObjectURL(arquivo);
@@ -1216,9 +1354,18 @@ button,textarea,input{font:inherit;color:inherit}
       const s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
       const c = document.createElement('canvas');
       c.width = Math.max(1, Math.round(im.naturalWidth * s)); c.height = Math.max(1, Math.round(im.naturalHeight * s));
-      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      const png = arquivo.type === 'image/png' && arquivo.size < 1200000;
-      return { src: c.toDataURL(png ? 'image/png' : 'image/jpeg', 0.86), w: c.width, h: c.height };
+      const x = c.getContext('2d');
+      const jpeg = arquivo.type === 'image/jpeg';
+      if (jpeg) { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); }
+      x.drawImage(im, 0, 0, c.width, c.height);
+      let src;
+      if (jpeg) src = c.toDataURL('image/jpeg', 0.86);
+      else if (arquivo.type === 'image/png' && arquivo.size < 1200000) src = c.toDataURL('image/png');
+      else {
+        src = c.toDataURL('image/webp', 0.86);
+        if (src.indexOf('data:image/webp') !== 0) src = c.toDataURL('image/png');
+      }
+      return { src, w: c.width, h: c.height };
     } finally { URL.revokeObjectURL(url); }
   }
   $('arquivo').addEventListener('change', async (e) => {
@@ -1245,7 +1392,7 @@ button,textarea,input{font:inherit;color:inherit}
     const b = limitesTudo();
     if (!b) return null;
     try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (err) { /* segue */ }
-    await Promise.all(itens.filter((i) => i.k === 'i').map((i) => carregarImagem(i.src).catch(() => null)));
+    await Promise.all(itens.filter((i) => i.k === 'i' && i.src).map((i) => carregarImagem(i.src).catch(() => null)));
     const pad = 32;
     const x0 = b.x0 - pad, y0 = b.y0 - pad, x1 = b.x1 + pad, y1 = b.y1 + pad;
     const lw = x1 - x0, lh = y1 - y0;
@@ -1305,7 +1452,7 @@ button,textarea,input{font:inherit;color:inherit}
   }
 
   /* ============ Enviar para o Claude ============ */
-  let enviando = false, somenteLeitura = false;
+  let enviando = false, somenteLeitura = false, publicado = false;
   function definirStatus(t) { $('status').textContent = t || ''; }
   function novoId(prefixo) { return prefixo + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   const espera = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1343,7 +1490,7 @@ button,textarea,input{font:inherit;color:inherit}
   }
 
   async function enviar() {
-    if (enviando || somenteLeitura) return;
+    if (enviando || somenteLeitura || publicado) return;
     if (editorAberto()) fecharEditorTexto(true);
     const texto = campo.value.trim();
     if (!texto && !itens.length) { avisar('Desenhe algo ou escreva uma mensagem antes de enviar.'); return; }
@@ -1367,8 +1514,12 @@ button,textarea,input{font:inherit;color:inherit}
       const html = montarPagina(novo);
       if (html.length > 15000000) throw { code: 'too_large' };
       armazem.gravar(CH.envio, { id: msg.id, texto: texto }, true);
+      salvarTudo();
       definirStatus('Salvando na lousa…');
       await publicar(art, html);
+      /* A plataforma recarrega a lousa em seguida; até lá, não deixa enviar de novo. */
+      publicado = true;
+      setTimeout(() => { publicado = false; if (!somenteLeitura && !enviando) $('bt-enviar').disabled = false; }, 10000);
       estado = novo;
       campo.value = ''; ajustarCampo(); armazem.remover(CH.texto);
       renderConversa();
@@ -1378,18 +1529,18 @@ button,textarea,input{font:inherit;color:inherit}
       tratarErroEnvio(err);
     } finally {
       enviando = false;
-      if (!somenteLeitura) $('bt-enviar').disabled = false;
+      if (!somenteLeitura && !publicado) $('bt-enviar').disabled = false;
     }
   }
 
   function tratarErroEnvio(err) {
     const code = err && err.code;
-    armazem.remover(CH.envio, true);
     if (code === 'conflict') {
-      armazem.gravar(CH.envio, { conflito: true }, true);
-      definirStatus('A lousa recebeu uma atualização (talvez uma resposta do Claude) e vai recarregar. Depois, toque em Enviar de novo.');
+      /* Mantém o registro do envio: ao recarregar, a lousa confere se a mensagem chegou mesmo. */
+      definirStatus('A lousa recebeu uma atualização (talvez uma resposta do Claude) e vai recarregar. Se a mensagem não aparecer na conversa, toque em Enviar de novo.');
       return;
     }
+    armazem.remover(CH.envio, true);
     if (['not_writer', 'not_granted', 'consent_required', 'capability_disabled', 'capability_removed', 'not_declared'].includes(code)) { marcarSomenteLeitura(); return; }
     if (code === 'rate_limited') { definirStatus('Muitos envios seguidos. Espere um minuto e tente de novo.'); return; }
     if (code === 'too_large') { definirStatus('A lousa ficou grande demais para salvar. Use “Nova folha” e envie um desenho menor.'); return; }
@@ -1415,51 +1566,54 @@ button,textarea,input{font:inherit;color:inherit}
   });
   async function leituraRapida() {
     if (leituraCtl) { leituraCtl.abort(); return; }
-    const s = await capSample;
-    if (!s) return;
     if (editorAberto()) fecharEditorTexto(true);
     if (!itens.length) { avisar('Desenhe algo primeiro.'); return; }
-    let exp;
-    try { exp = await exportarPNG(); } catch (err) { avisar('Não consegui gerar a imagem do desenho.'); return; }
-    if (!exp) return;
-    const pergunta = campo.value.trim();
-    const historico = estado.mensagens.slice(-6).map((m) => (m.de === 'claude' ? 'Claude' : 'Pessoa') + ': ' + (m.texto ? m.texto.slice(0, 400) : '(só desenho)')).join('\n');
-    const prompt = [
-      'A imagem anexada é uma lousa digital desenhada à mão com caneta (S Pen) num tablet.',
-      pergunta ? 'A pessoa escreveu junto: "' + pergunta.slice(0, 2000) + '"' : 'A pessoa não escreveu nada junto.',
-      historico ? 'Conversa recente na lousa, para contexto:\n' + historico : '',
-      'Responda em português do Brasil, direto e curto (até 8 linhas):',
-      '- o que você vê: elementos, palavras escritas à mão, setas e ligações;',
-      '- a ideia que o desenho comunica;',
-      '- se houver pergunta, responda. Se algo estiver ambíguo, diga o quê e pergunte.',
-      'Sem títulos.'
-    ].filter(Boolean).join('\n\n');
-    const reg = { id: novoId('l'), em: new Date().toISOString(), texto: '', fase: 'pensando' };
-    leituras.push(reg);
-    renderConversa();
-    abrirConversa();
-    leituraCtl = new AbortController();
+    const ctl = new AbortController();
+    leituraCtl = ctl;
     atualizarBotaoLeitura();
+    let reg = null;
     try {
-      const r = await s(prompt, {
-        images: [exp.blob], signal: leituraCtl.signal, cache: false,
-        onText: ({ text }) => { reg.texto = text; reg.fase = 'escrevendo'; atualizarLeitura(reg); }
-      });
-      reg.texto = r.text; reg.fase = r.truncated ? 'cortada' : 'pronta';
-    } catch (err) {
-      const code = err && err.code;
-      reg.texto = (err && err.text) || '';
-      if (code === 'cancelled') reg.fase = 'parada';
-      else if (code === 'refused') { reg.texto = ''; reg.fase = 'recusada'; }
-      else if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'images_unavailable'].includes(code)) { reg.fase = 'indisponivel'; $('bt-leitura').hidden = true; }
-      else if (code === 'rate_limited') reg.fase = 'limite';
-      else if (code === 'image_rejected') reg.fase = 'imagem';
-      else reg.fase = 'erro';
-    } finally {
-      leituraCtl = null;
-      atualizarBotaoLeitura();
-      salvarLeituras();
+      const s = await capSample;
+      if (!s || ctl.signal.aborted) return;
+      let exp;
+      try { exp = await exportarPNG(); } catch (err) { avisar('Não consegui gerar a imagem do desenho.'); return; }
+      if (!exp || ctl.signal.aborted) return;
+      const pergunta = campo.value.trim();
+      const historico = estado.mensagens.slice(-6).map((m) => (m.de === 'claude' ? 'Claude' : 'Pessoa') + ': ' + (m.texto ? m.texto.slice(0, 400) : '(só desenho)')).join('\n');
+      const prompt = [
+        'A imagem anexada é uma lousa digital desenhada à mão com caneta (S Pen) num tablet.',
+        pergunta ? 'A pessoa escreveu junto: "' + pergunta.slice(0, 2000) + '"' : 'A pessoa não escreveu nada junto.',
+        historico ? 'Conversa recente na lousa, para contexto:\n' + historico : '',
+        'Responda em português do Brasil, direto e curto (até 8 linhas):',
+        '- o que você vê: elementos, palavras escritas à mão, setas e ligações;',
+        '- a ideia que o desenho comunica;',
+        '- se houver pergunta, responda. Se algo estiver ambíguo, diga o quê e pergunte.',
+        'Sem títulos.'
+      ].filter(Boolean).join('\n\n');
+      reg = { id: novoId('l'), em: new Date().toISOString(), texto: '', fase: 'pensando' };
+      leituras.push(reg);
       renderConversa();
+      abrirConversa();
+      try {
+        const r = await s(prompt, {
+          images: [exp.blob], signal: ctl.signal, cache: false,
+          onText: ({ text }) => { reg.texto = text; reg.fase = 'escrevendo'; atualizarLeitura(reg); }
+        });
+        reg.texto = r.text; reg.fase = r.truncated ? 'cortada' : 'pronta';
+      } catch (err) {
+        const code = err && err.code;
+        reg.texto = (err && err.text) || '';
+        if (code === 'cancelled') reg.fase = 'parada';
+        else if (code === 'refused') { reg.texto = ''; reg.fase = 'recusada'; }
+        else if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'images_unavailable'].includes(code)) { reg.fase = 'indisponivel'; $('bt-leitura').hidden = true; }
+        else if (code === 'rate_limited') reg.fase = 'limite';
+        else if (code === 'image_rejected') reg.fase = 'imagem';
+        else reg.fase = 'erro';
+      }
+    } finally {
+      if (leituraCtl === ctl) leituraCtl = null;
+      atualizarBotaoLeitura();
+      if (reg) { salvarLeituras(); renderConversa(); }
     }
   }
   const NOTAS_LEITURA = {
@@ -1502,21 +1656,28 @@ button,textarea,input{font:inherit;color:inherit}
       else pai.append(document.createTextNode(p));
     }
   }
+  const RE_ITEM = /^\s*([-*•]|\d+[.)])\s+/;
   function renderTexto(el, texto) {
     const blocos = String(texto).replace(/\r/g, '').split(/\n{2,}/);
     for (const bloco of blocos) {
       const linhas = bloco.split('\n').filter((l) => l.trim());
-      if (!linhas.length) continue;
-      const ehLista = linhas.every((l) => /^\s*([-*•]|\d+[.)])\s+/.test(l));
-      if (ehLista) {
-        const ordenada = /^\s*\d/.test(linhas[0]);
-        const lista = criar(ordenada ? 'ol' : 'ul');
-        for (const l of linhas) { const li = criar('li'); textoEmLinha(li, l.replace(/^\s*([-*•]|\d+[.)])\s+/, '')); lista.append(li); }
-        el.append(lista);
-      } else {
-        const p = criar('p');
-        linhas.forEach((l, i) => { if (i) p.append(criar('br')); textoEmLinha(p, l); });
-        el.append(p);
+      let i = 0;
+      while (i < linhas.length) {
+        if (RE_ITEM.test(linhas[i])) {
+          const lista = criar(/^\s*\d/.test(linhas[i]) ? 'ol' : 'ul');
+          while (i < linhas.length && RE_ITEM.test(linhas[i])) {
+            const li = criar('li'); textoEmLinha(li, linhas[i].replace(RE_ITEM, '')); lista.append(li); i++;
+          }
+          el.append(lista);
+        } else {
+          const p = criar('p');
+          let primeira = true;
+          while (i < linhas.length && !RE_ITEM.test(linhas[i])) {
+            if (!primeira) p.append(criar('br'));
+            textoEmLinha(p, linhas[i]); primeira = false; i++;
+          }
+          el.append(p);
+        }
       }
     }
   }
@@ -1701,10 +1862,13 @@ button,textarea,input{font:inherit;color:inherit}
   new MutationObserver(aoMudarTema).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   if (window.ResizeObserver) new ResizeObserver(() => redimensionar()).observe(palco);
   window.addEventListener('resize', () => { redimensionar(); fecharPopovers(); });
-  window.addEventListener('pagehide', salvarRascunho);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') salvarRascunho(); });
+  function salvarTudo() { clearTimeout(timerTexto); armazem.gravar(CH.texto, campo.value); salvarRascunho(); }
+  window.addEventListener('pagehide', salvarTudo);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') salvarTudo(); });
+  palco.addEventListener('scroll', () => { palco.scrollLeft = 0; palco.scrollTop = 0; });
+  function aoCarregarFontes() { caixas = new WeakMap(); metricas.clear(); agendarBase(); if (edicao) posicionarEditor(); }
   if (document.fonts && document.fonts.load) {
-    document.fonts.load('600 32px Caveat').then(() => { agendarBase(); }).catch(() => {});
+    document.fonts.load('600 32px Caveat').then(aoCarregarFontes).catch(() => {});
   }
 
   /* ============ Início ============ */
@@ -1719,6 +1883,7 @@ button,textarea,input{font:inherit;color:inherit}
 
   lerTokens();
   restaurar(armazem.ler(CH.rascunho, null));
+  carregarImagensGuardadas();
   const textoSalvo = armazem.ler(CH.texto, '');
   if (typeof textoSalvo === 'string' && textoSalvo) { campo.value = textoSalvo; }
   atualizarBarra();
